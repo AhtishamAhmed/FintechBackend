@@ -2,6 +2,7 @@
 using Application;
 using Infrastructure;
 using Persistance;
+using Persistance.Seed;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -11,7 +12,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure();
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddPersistance(builder.Configuration);
 
 
@@ -27,6 +28,10 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    await RoleSeeder.SeedRolesAsync(scope.ServiceProvider);
+}
 
 if (app.Environment.IsDevelopment())
 {

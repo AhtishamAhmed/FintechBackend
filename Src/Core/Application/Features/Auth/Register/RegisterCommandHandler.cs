@@ -40,7 +40,7 @@ namespace Application.Features.Auth.Register
                 throw new ApiException(string.Join(" ", errors));
             }
 
-            await _userManager.AddToRoleAsync(user, "User");
+            await _userManager.AddToRoleAsync(user, "Customer");
 
             var response = new RegisterResponseDto
             {
