@@ -16,6 +16,7 @@ namespace WebApi.Controllers
             _mediator = mediator;
         }
 
+
         [HttpPost("register")]
         public async Task<ActionResult<ApiResponse<RegisterResponseDto>>> Register(RegisterCommand command)
         {
