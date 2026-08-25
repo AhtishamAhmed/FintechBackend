@@ -19,7 +19,7 @@ namespace Application.Features.Auth.Register
         {
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
-            {
+            {   
                 throw new ApiException("An account with this email already exists.");
             }
 
@@ -40,7 +40,7 @@ namespace Application.Features.Auth.Register
                 throw new ApiException(string.Join(" ", errors));
             }
 
-            await _userManager.AddToRoleAsync(user, "User");
+            await _userManager.AddToRoleAsync(user, "Customer");
 
             var response = new RegisterResponseDto
             {
