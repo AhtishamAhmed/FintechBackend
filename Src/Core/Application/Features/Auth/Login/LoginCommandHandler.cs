@@ -2,6 +2,7 @@ using Application.Exceptions;
 using Application.Interfaces;
 using Application.Wrappers;
 using Domain.Entities;
+using Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
@@ -11,11 +12,13 @@ namespace Application.Features.Auth.Login
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly ITokenService _tokenService;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
 
-        public LoginCommandHandler(UserManager<ApplicationUser> userManager, ITokenService tokenService)
+        public LoginCommandHandler(UserManager<ApplicationUser> userManager, ITokenService tokenService, IRefreshTokenRepository refreshTokenRepository)
         {
             _userManager = userManager;
             _tokenService = tokenService;
+            _refreshTokenRepository = refreshTokenRepository;
         }
 
         public async Task<ApiResponse<LoginResponseDto>> Handle(LoginCommand request, CancellationToken cancellationToken)
@@ -32,8 +35,16 @@ namespace Application.Features.Auth.Login
                 throw new ApiException("Invalid email or password.");
             }
 
+            if (user.Status != UserStatus.Active || await _userManager.IsLockedOutAsync(user))
+            {
+                throw new ApiException("This account is not active. Please contact support.");
+            }
+
             var roles = await _userManager.GetRolesAsync(user);
-            var (token, expiresAtUtc) = _tokenService.CreateToken(user, roles);
+            var (token, expiresAtUtc) = _tokenService.CreateAccessToken(user, roles);
+
+            var refreshToken = _tokenService.CreateRefreshToken(user.Id);
+            await _refreshTokenRepository.AddAsync(refreshToken);
 
             var response = new LoginResponseDto
             {
@@ -43,6 +54,7 @@ namespace Application.Features.Auth.Login
                 Email = user.Email!,
                 Roles = roles.ToList(),
                 Token = token,
+                RefreshToken = refreshToken.Token,
                 ExpiresAtUtc = expiresAtUtc
             };
 

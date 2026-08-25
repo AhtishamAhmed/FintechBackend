@@ -19,7 +19,7 @@ namespace Application.Features.Auth.Register
         {
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
-            {
+            {   
                 throw new ApiException("An account with this email already exists.");
             }
 

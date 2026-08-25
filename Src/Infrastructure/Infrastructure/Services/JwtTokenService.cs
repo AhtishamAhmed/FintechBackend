@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Application.Interfaces;
 using Domain.Entities;
@@ -18,7 +19,7 @@ namespace Infrastructure.Services
             _jwtSettings = jwtSettings.Value;
         }
 
-        public (string Token, DateTime ExpiresAtUtc) CreateToken(ApplicationUser user, IList<string> roles)
+        public (string Token, DateTime ExpiresAtUtc) CreateAccessToken(ApplicationUser user, IList<string> roles)
         {
             var claims = new List<Claim>
             {
@@ -44,6 +45,18 @@ namespace Infrastructure.Services
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
             return (tokenString, expires);
+        }
+
+        public RefreshToken CreateRefreshToken(string userId)
+        {
+            var randomBytes = RandomNumberGenerator.GetBytes(64);
+
+            return new RefreshToken
+            {
+                Token = Convert.ToBase64String(randomBytes),
+                UserId = userId,
+                ExpiresAtUtc = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays)
+            };
         }
     }
 }

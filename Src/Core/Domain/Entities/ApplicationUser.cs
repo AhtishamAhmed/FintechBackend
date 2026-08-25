@@ -1,3 +1,4 @@
+using Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 
 namespace Domain.Entities
@@ -6,5 +7,6 @@ namespace Domain.Entities
     {
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
+        public UserStatus Status { get; set; } = UserStatus.Active;
     }
 }
