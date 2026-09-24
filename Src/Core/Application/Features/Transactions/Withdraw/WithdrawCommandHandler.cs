@@ -55,6 +55,12 @@ namespace Application.Features.Transactions.Withdraw
                 throw new ApiException("Insufficient wallet balance.");
             }
 
+            var kyc = await _context.KycApplications.FirstOrDefaultAsync(k => k.UserId == userId, cancellationToken);
+            if (kyc == null || kyc.Status != KycStatus.Approved)
+            {
+                throw new ApiException("You must complete KYC verification before making transactions.");
+            }
+
             var flagReason = await _fraudDetectionService.EvaluateAsync(userId, request.Amount, cancellationToken);
 
             var transaction = new Transaction

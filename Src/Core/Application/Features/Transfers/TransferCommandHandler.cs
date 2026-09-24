@@ -54,6 +54,12 @@ namespace Application.Features.Transfers
                 throw new ApiException("Your wallet is not active.");
             }
 
+            var senderKyc = await _context.KycApplications.FirstOrDefaultAsync(k => k.UserId == senderId, cancellationToken);
+            if (senderKyc == null || senderKyc.Status != KycStatus.Approved)
+            {
+                throw new ApiException("You must complete KYC verification before making transactions.");
+            }
+
             var recipientUser = await _userManager.FindByEmailAsync(request.RecipientEmail)
                 ?? throw new ApiException("Recipient not found.");
 
